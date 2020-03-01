@@ -1,0 +1,44 @@
+<div class="header">
+  <div class="d-flex flex-wrap justify-content-center">
+    <div class="col-12 text-center">
+      <h3>{{months[selectedMonth] + ' ' + selectedYear}}</h3>
+    </div>
+    <div class="col-auto btn-group btn-group-toggle">
+      <label class="btn-primary" ngbButtonLabel>
+        <input type="checkbox" ngbButton (click)="getPreviousMonth()"> Previous Month
+      </label>
+      <label class="btn-primary" ngbButtonLabel>
+        <input type="checkbox" ngbButton (click)="getCurrentMonth()"> Current Month
+      </label>
+      <label class="btn-primary" ngbButtonLabel>
+        <input type="checkbox" ngbButton (click)="getNextMonth()"> Next Month
+      </label>
+    </div>
+  </div>
+</div>
+
+<div class="mt-3">
+  <table class="table table-bordered">
+    <thead>
+    <tr>
+      <th scope="col">Sunday</th>
+      <th scope="col">Monday</th>
+      <th scope="col">Tuesday</th>
+      <th scope="col">Wednesday</th>
+      <th scope="col">Thursday</th>
+      <th scope="col">Friday</th>
+      <th scope="col">Saturday</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let weeks of monthWeeks[0][selectedYear][selectedMonth];">
+      <td *ngFor="let day of weeks">
+        <div [ngClass]="{'day-disabled': day?.dayDisabled }" style="width: 150px; height: 150px"
+             (click)="setReminder()">{{ day.monthDay }}
+        </div>
+      </td>
+    </tr>
+
+    </tbody>
+  </table>
+</div>
