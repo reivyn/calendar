@@ -4,29 +4,25 @@
       <h3>{{months[selectedMonth] + ' ' + selectedYear}}</h3>
     </div>
     <div class="col-auto mt-2">
-
       <button type="button" class="btn btn-link ngb-dp-arrow-btn" aria-label="Previous month" title="Previous month"
               (click)="getMonth('previous')">
         <span class="ngb-dp-navigation-chevron"></span>
       </button>
-      <!--      <label class="btn-primary" ngbButtonLabel>-->
-      <!--        <input type="checkbox" ngbButton (click)="getMonth('previous')"> Previous Month-->
-      <!--      </label>-->
       <button class="btn btn-outline-primary" (click)="getMonth('current')">Current Month</button>
-
       <button type="button" class="btn btn-link ngb-dp-arrow-btn" aria-label="Next month" title="Next month"
               (click)="getMonth('next')">
         <span class="ngb-dp-navigation-chevron right"></span>
       </button>
-
-      <!--      <label class="btn-primary" ngbButtonLabel>-->
-      <!--        <input type="checkbox" ngbButton (click)="getMonth('next')"> Next Month-->
-      <!--      </label>-->
-
+    </div>
+    <div class="col-12 mt-2 pl-3 pl-lg-0 text-center text-lg-left">
+      <span class="ml-0 ml-lg-5"></span>
+      <button class="btn btn-outline-primary "
+              (click)="addReminder(setReminderModal, {year: selectedYear, month:selectedMonth}, 'custom')">Add Reminder
+      </button>
     </div>
   </div>
 </div>
-<div class="calendar-container mt-4 ml-0 ml-lg-5 mr-0 mr-lg-5">
+<div class="calendar-container mt-2 ml-0 ml-lg-5 mr-0 mr-lg-5">
   <table class="table table-sm table-bordered">
     <thead>
     <tr class=" table-header text-center">
@@ -42,18 +38,18 @@
     <tbody>
     <tr *ngFor="let weeks of monthWeeks[0][selectedYear][selectedMonth];">
       <td *ngFor="let day of weeks" class="reminder-container-td">
-        <!--        width: 150px;-->
-        <!--        min-height: 100px-->
         <div [ngClass]="{'day-disabled': day.option?.disabled }">
           <p class="reminder-day ml-1 mb-3 d-flex">
             <span class="col m-0 p-0">{{ day.date.day }}</span>
             <span class="col-1 mr-1" *ngIf="!day.option?.disabled">
-              <fa-icon class="icon-plus fa-lg" title="Add Reminder"  (click)="openReminderModal(setReminderModal, day.date)" [icon]="faPlusCircle"></fa-icon>
+              <fa-icon class="icon-plus fa-lg" title="Add Reminder" (click)="addReminder(setReminderModal, day.date)"
+                       [icon]="faPlusCircle"></fa-icon>
             </span>
           </p>
-          <div *ngFor="let reminder of day.reminders" class="reminder-body d-flex ml-1">
+          <div *ngFor="let reminder of day.reminders; let i = index"
+               (click)="showReminder(setReminderModal, day.date, i)" class="reminder-body d-flex ml-1">
             <div class="col-1 align-self-center dot-reminder">
-              <div class="dot-color" [ngStyle]="{color: reminder.color}"></div>
+              <div class="dot-color" [ngStyle]="{color: reminder.color}">{{i}}</div>
             </div>
             <div class="col-11 reminder-span pl-0 pr-0">
              <span aria-hidden="true" class=" ">
@@ -61,13 +57,10 @@
               <span class="">{{ reminder.title }}</span>
             </span>
             </div>
-
           </div>
         </div>
-
       </td>
     </tr>
-
     </tbody>
   </table>
 </div>
@@ -78,8 +71,12 @@
       <span class="mr-2 font-weight-bolder">{{daysName[tempModalData.weekDay]}}</span>
       <span class="mr-2">{{tempModalData.day}}</span>
       <span class="mr-2">{{months[tempModalData.month]}}</span>
-      <span>{{tempModalData.year}}</span></h5>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span>{{tempModalData.year}}</span>
+    </h5>
+    <span *ngIf="showEditButton">
+      <fa-icon class="icon-plus fa-lg" title="Edit Reminder" (click)="editReminder()" [icon]="faEdit"></fa-icon>
+    </span>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -89,24 +86,27 @@
       <div class="form-group row">
         <label for="title" class="col-sm-2 col-form-label">Title:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="title" placeholder="Add title" formControlName="title">
+          <input type="text" class="form-control" id="title" placeholder="Add title" formControlName="title"
+                 [readonly]="editReminderInput">
         </div>
       </div>
       <div class="form-group row">
         <label for="day" class="col-sm-2 col-form-label">Day:</label>
         <div class="col-sm-3">
-          <input type="text" class="form-control text-center" id="day" placeholder="Add day"
-                 value="{{tempModalData.day}}" readonly>
+          <input type="number" class="form-control text-center" id="day" formControlName="day" min="1"
+                 max="{{totalMonthDays}}" [readonly]="!editReminderDay">
         </div>
         <label for="title" class="col-sm-2 col-form-label">Time:</label>
         <div class="col-sm-5">
-          <ngb-timepicker id="time" formControlName="time"></ngb-timepicker>
+          <ngb-timepicker id="time" formControlName="time" [spinners]="!editReminderInput"
+                          [readonlyInputs]="editReminderInput"></ngb-timepicker>
         </div>
       </div>
       <div class="form-group row">
         <label for="city" class="col-sm-2 col-form-label">City:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="city" placeholder="Add city" formControlName="city">
+          <input type="text" class="form-control" id="city" placeholder="Add city" formControlName="city"
+                 [readonly]="editReminderInput">
         </div>
       </div>
       <div class="form-group row pt-3">
@@ -117,7 +117,8 @@
                    class="input-group-text" for="inputGroupSelectColor"></label>
           </div>
           <select class="custom-select" id="inputGroupSelectColor" formControlName="color">
-            <option *ngFor="let color of colorsOption" value="{{color.rgb}}">{{color.name}}</option>
+            <option *ngFor="let color of colorsOption" value="{{color.rgb}}"
+                    [hidden]="editReminderInput">{{color.name}}</option>
             <option value hidden>Choose a Color</option>
           </select>
         </div>
