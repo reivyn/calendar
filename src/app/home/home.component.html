@@ -3,24 +3,33 @@
     <div class="col-12 text-center">
       <h3>{{months[selectedMonth] + ' ' + selectedYear}}</h3>
     </div>
-    <div class="col-auto btn-group btn-group-toggle">
-      <label class="btn-primary" ngbButtonLabel>
-        <input type="checkbox" ngbButton (click)="getMonth('previous')"> Previous Month
-      </label>
-      <label class="btn-primary" ngbButtonLabel>
-        <input type="checkbox" ngbButton (click)="getMonth('current')"> Current Month
-      </label>
-      <label class="btn-primary" ngbButtonLabel>
-        <input type="checkbox" ngbButton (click)="getMonth('next')"> Next Month
-      </label>
+    <div class="col-auto mt-2">
+
+      <button type="button" class="btn btn-link ngb-dp-arrow-btn" aria-label="Previous month" title="Previous month"
+              (click)="getMonth('previous')">
+        <span class="ngb-dp-navigation-chevron"></span>
+      </button>
+      <!--      <label class="btn-primary" ngbButtonLabel>-->
+      <!--        <input type="checkbox" ngbButton (click)="getMonth('previous')"> Previous Month-->
+      <!--      </label>-->
+      <button class="btn btn-outline-primary" (click)="getMonth('current')">Current Month</button>
+
+      <button type="button" class="btn btn-link ngb-dp-arrow-btn" aria-label="Next month" title="Next month"
+              (click)="getMonth('next')">
+        <span class="ngb-dp-navigation-chevron right"></span>
+      </button>
+
+      <!--      <label class="btn-primary" ngbButtonLabel>-->
+      <!--        <input type="checkbox" ngbButton (click)="getMonth('next')"> Next Month-->
+      <!--      </label>-->
+
     </div>
   </div>
 </div>
-
-<div class="mt-3">
-  <table class="table table-bordered">
+<div class="calendar-container mt-4 ml-0 ml-lg-5 mr-0 mr-lg-5">
+  <table class="table table-sm table-bordered">
     <thead>
-    <tr>
+    <tr class=" table-header text-center">
       <th scope="col">Sunday</th>
       <th scope="col">Monday</th>
       <th scope="col">Tuesday</th>
@@ -32,11 +41,18 @@
     </thead>
     <tbody>
     <tr *ngFor="let weeks of monthWeeks[0][selectedYear][selectedMonth];">
-      <td *ngFor="let day of weeks">
-        <div [ngClass]="{'day-disabled': day.option?.disabled }" style="width: 150px; height: 150px"
-             (click)="openReminderModal(setReminderModal, day.date)">{{ day.date.day }}
-          <div *ngFor="let reminder of day.reminders" class="reminder-body d-flex">
-            <div class="col-1 align-self-center">
+      <td *ngFor="let day of weeks" class="reminder-container-td">
+        <!--        width: 150px;-->
+        <!--        min-height: 100px-->
+        <div [ngClass]="{'day-disabled': day.option?.disabled }">
+          <p class="reminder-day ml-1 mb-3 d-flex">
+            <span class="col m-0 p-0">{{ day.date.day }}</span>
+            <span class="col-1 mr-1" *ngIf="!day.option?.disabled">
+              <fa-icon class="icon-plus fa-lg" title="Add Reminder"  (click)="openReminderModal(setReminderModal, day.date)" [icon]="faPlusCircle"></fa-icon>
+            </span>
+          </p>
+          <div *ngFor="let reminder of day.reminders" class="reminder-body d-flex ml-1">
+            <div class="col-1 align-self-center dot-reminder">
               <div class="dot-color" [ngStyle]="{color: reminder.color}"></div>
             </div>
             <div class="col-11 reminder-span pl-0 pr-0">
@@ -58,7 +74,11 @@
 
 <ng-template #setReminderModal let-modal>
   <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Profile update</h4>
+    <h5 class="modal-title" id="modal-basic-title">
+      <span class="mr-2 font-weight-bolder">{{daysName[tempModalData.weekDay]}}</span>
+      <span class="mr-2">{{tempModalData.day}}</span>
+      <span class="mr-2">{{months[tempModalData.month]}}</span>
+      <span>{{tempModalData.year}}</span></h5>
     <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -66,31 +86,45 @@
 
   <form [formGroup]="reminderForm" (ngSubmit)="setReminder()">
     <div class="modal-body">
-      <div class="form-group">
-        <label for="title">Title</label>
-        <div class="input-group">
+      <div class="form-group row">
+        <label for="title" class="col-sm-2 col-form-label">Title:</label>
+        <div class="col-sm-10">
           <input type="text" class="form-control" id="title" placeholder="Add title" formControlName="title">
         </div>
       </div>
-      <div class="form-group">
-        <label for="time">Time</label>
-        <div class="input-group">
+      <div class="form-group row">
+        <label for="day" class="col-sm-2 col-form-label">Day:</label>
+        <div class="col-sm-3">
+          <input type="text" class="form-control text-center" id="day" placeholder="Add day"
+                 value="{{tempModalData.day}}" readonly>
+        </div>
+        <label for="title" class="col-sm-2 col-form-label">Time:</label>
+        <div class="col-sm-5">
           <ngb-timepicker id="time" formControlName="time"></ngb-timepicker>
         </div>
       </div>
-      <div class="input-group mb-3">
-        <div class="input-group-prepend">
-          <label [(colorPicker)]="reminderForm.value.color" [ngStyle]="{'background-color': reminderForm.value.color}"
-                 class="input-group-text" for="inputGroupSelect01"></label>
+      <div class="form-group row">
+        <label for="city" class="col-sm-2 col-form-label">City:</label>
+        <div class="col-sm-10">
+          <input type="text" class="form-control" id="city" placeholder="Add city" formControlName="city">
         </div>
-        <select class="custom-select" id="inputGroupSelect01" formControlName="color">
-          <option *ngFor="let color of colorsOption" value="{{color.rgb}}">{{color.name}}</option>
-          <option value hidden>Choose a Color</option>
-        </select>
+      </div>
+      <div class="form-group row pt-3">
+        <label for="inputGroupSelectColor" class="col-sm-2 col-form-label">Color:</label>
+        <div class="input-group col-sm-10">
+          <div class="input-group-prepend">
+            <label [ngStyle]="{'background-color': reminderForm.value.color}"
+                   class="input-group-text" for="inputGroupSelectColor"></label>
+          </div>
+          <select class="custom-select" id="inputGroupSelectColor" formControlName="color">
+            <option *ngFor="let color of colorsOption" value="{{color.rgb}}">{{color.name}}</option>
+            <option value hidden>Choose a Color</option>
+          </select>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="submit" [disabled]="reminderForm.invalid" class="btn btn-outline-dark">Save</button>
+      <button type="submit" [disabled]="reminderForm.invalid" class="btn btn-primary w-25">Save</button>
     </div>
   </form>
 </ng-template>

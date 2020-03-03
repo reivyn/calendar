@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ModalDismissReasons, NgbModal} from '@ng-bootstrap/ng-bootstrap';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {WeatherService} from '../services/weather.service';
+import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
 
 export interface CalendarDate {
   year: number;
@@ -16,14 +18,16 @@ export interface CalendarDate {
   styleUrls: ['./home.component.sass']
 })
 export class HomeComponent implements OnInit {
+  private fiveDayWeather: any[] | {} = '';
 
-  constructor(private modalService: NgbModal, private fb: FormBuilder) {
+  constructor(private modalService: NgbModal, private fb: FormBuilder, private weatherService: WeatherService) {
   }
 
   currentDate: Date;
   monthWeeks: [any];
   selectedDate: any;
   months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  daysName = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   colorsOption = [
     {name: 'Blue', rgb: '#007bff'},
     {name: 'Indigo', rgb: '#6610f2'},
@@ -41,7 +45,7 @@ export class HomeComponent implements OnInit {
   closeResult: string;
   reminderForm: FormGroup;
   tempModalData: CalendarDate;
-  colorPickerState = false;
+  faPlusCircle = faPlusCircle;
 
 
   private static getDismissReason(reason: any): string {
@@ -55,6 +59,7 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // (this.getWeather());
     this.currentDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
     this.selectedDate = this.currentDate;
     this.selectedMonth = this.selectedDate.getMonth();
@@ -68,7 +73,8 @@ export class HomeComponent implements OnInit {
     this.reminderForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(30)]],
       time: [{hour: 12, minute: 0o0}, [Validators.required]],
-      color: ['', [Validators.required]],
+      city: ['', Validators.required],
+      color: ['', [Validators.required]]
     });
 
     this.getCalendar(this.currentDate);
@@ -142,7 +148,7 @@ export class HomeComponent implements OnInit {
 
   openReminderModal(targetModal, data) {
     this.tempModalData = data;
-    this.modalService.open(targetModal, {ariaLabelledBy: 'modal-basic-title'}).result.then((result) => {
+    this.modalService.open(targetModal, {ariaLabelledBy: 'modal-reminder'}).result.then((result) => {
       this.closeResult = `Closed with: ${result}`;
       console.log(this.closeResult);
     }, (reason) => {
@@ -165,6 +171,7 @@ export class HomeComponent implements OnInit {
     this.monthWeeks[0][year][month][week][weekDay].reminders.push({
       title: this.reminderForm.get('title').value,
       time: this.reminderForm.get('time').value,
+      city: this.reminderForm.get('city').value,
       color: this.reminderForm.get('color').value
     });
     this.modalService.dismissAll();
@@ -174,4 +181,24 @@ export class HomeComponent implements OnInit {
       color: '#007bff'
     });
   }
+
+  async getWeather() {
+    try {
+
+      await this.weatherService.getWheater().subscribe(res => {
+        console.log('received');
+        this.fiveDayWeather = res;
+      });
+
+    } catch (e) {
+      console.log('error');
+    }
+
+
+  }
+
+  getWData() {
+    console.log(this.fiveDayWeather);
+  }
+
 }
