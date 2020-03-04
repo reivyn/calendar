@@ -8,17 +8,16 @@ import {environment} from '../../environments/environment';
   providedIn: 'root'
 })
 export class WeatherService {
-  private apiKey = 'd477ba713916d03292ad33818d90351e';
-  private city = 'London';
+  private apiKey = environment.weatherApiKey;
 
   constructor(private http: HttpClient) { }
-
-  getWheater() {
-    const params = new HttpParams().set('q', this.city).set('appid', this.apiKey);
-    console.log(environment.weatherApi, {params});
-    console.log(params);
-    return this.http.get(environment.fiveDaysWeatherApi, {params})
-      .pipe(
+  getWeather(city) {
+    const params = new HttpParams().set('q', city).set('appid', this.apiKey);
+    return this.http.get(environment.weatherApi, {params}).toPromise()
+      .then((value: {weather: [{main}], main: {temp}}) => {
+        return {weather: value.weather[0].main, temp: value.main.temp};
+      })
+      .catch(
         catchError(this.handleError('getHeroes', []))
       );
   }

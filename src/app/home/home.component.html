@@ -49,12 +49,18 @@
           <div *ngFor="let reminder of day.reminders; let i = index"
                (click)="showReminder(setReminderModal, day.date, i)" class="reminder-body d-flex ml-1">
             <div class="col-1 align-self-center dot-reminder">
-              <div class="dot-color" [ngStyle]="{color: reminder.color}">{{i}}</div>
+              <div class="dot-color" [ngStyle]="{color: reminder.color}"></div>
             </div>
             <div class="col-11 reminder-span pl-0 pr-0">
-             <span aria-hidden="true" class=" ">
-              <span class="mr-1">{{ reminder.time.hour + ':' + reminder.time.minute}}</span>
-              <span class="">{{ reminder.title }}</span>
+             <span aria-hidden="true">
+               <span class="mr-1">{{ reminder.time.hour + ':' + reminder.time.minute}}</span>
+               <span>{{ reminder.title }}</span>
+               <span *ngIf="reminder.forecast">{{' - '}}</span>
+               <span class="weather-text font-weight-bold" *ngIf="reminder.forecast?.temp">
+                 {{ reminder.forecast?.temp + 'C° ' + reminder.forecast?.weather }}
+               </span>
+               <span class="alert-text font-weight-bold"
+                     *ngIf="reminder.forecast === 'City not found'">City not found</span>
             </span>
             </div>
           </div>
@@ -73,9 +79,6 @@
       <span class="mr-2">{{months[tempModalData.month]}}</span>
       <span>{{tempModalData.year}}</span>
     </h5>
-    <span *ngIf="showEditButton">
-      <fa-icon class="icon-plus fa-lg" title="Edit Reminder" (click)="editReminder()" [icon]="faEdit"></fa-icon>
-    </span>
     <button type="button" class="close" aria-label="Close" (click)="modal.dismiss()">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -86,15 +89,32 @@
       <div class="form-group row">
         <label for="title" class="col-sm-2 col-form-label">Title:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="title" placeholder="Add title" formControlName="title"
+          <input type="text"
+                 [ngClass]="{'invalid-form': reminderForm.get('title').errors && reminderForm.get('title').touched}"
+                 class="form-control" id="title" placeholder="Add title (Max 30 chars.)" formControlName="title"
                  [readonly]="editReminderInput">
+          <div
+            [ngClass]="{'show-error': reminderForm.get('title').getError('required') && reminderForm.get('title').touched}"
+            class="invalid-feedback">
+            Please provide a title.
+          </div>
+          <div [ngClass]="{'show-error': (reminderForm.get('title').getError('maxlength'))}" class="invalid-feedback">
+            Max character length is 30.
+          </div>
         </div>
       </div>
       <div class="form-group row">
         <label for="day" class="col-sm-2 col-form-label">Day:</label>
         <div class="col-sm-3">
-          <input type="number" class="form-control text-center" id="day" formControlName="day" min="1"
+          <input type="number"
+                 [ngClass]="{'invalid-form': reminderForm.get('day').errors && reminderForm.get('day').touched}"
+                 class="form-control text-center" id="day" formControlName="day" min="1"
                  max="{{totalMonthDays}}" [readonly]="!editReminderDay">
+          <div
+            [ngClass]="{'show-error': reminderForm.get('day').getError('required') && reminderForm.get('day').touched}"
+            class="invalid-feedback">
+            Input a day.
+          </div>
         </div>
         <label for="title" class="col-sm-2 col-form-label">Time:</label>
         <div class="col-sm-5">
@@ -105,8 +125,16 @@
       <div class="form-group row">
         <label for="city" class="col-sm-2 col-form-label">City:</label>
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="city" placeholder="Add city" formControlName="city"
+          <input type="text"
+                 [ngClass]="{'invalid-form': reminderForm.get('city').errors && reminderForm.get('city').touched}"
+                 class="form-control" id="city" placeholder="City name or City name, Country name"
+                 formControlName="city"
                  [readonly]="editReminderInput">
+          <div
+            [ngClass]="{'show-error': reminderForm.get('city').getError('required') && reminderForm.get('city').touched}"
+            class="invalid-feedback">
+            Please provide a valid city.
+          </div>
         </div>
       </div>
       <div class="form-group row pt-3">
@@ -116,16 +144,29 @@
             <label [ngStyle]="{'background-color': reminderForm.value.color}"
                    class="input-group-text" for="inputGroupSelectColor"></label>
           </div>
-          <select class="custom-select" id="inputGroupSelectColor" formControlName="color">
+          <select
+            [ngClass]="{'invalid-form': reminderForm.get('color').errors && reminderForm.get('color').touched}"
+            class="custom-select" id="inputGroupSelectColor" formControlName="color">
             <option *ngFor="let color of colorsOption" value="{{color.rgb}}"
                     [hidden]="editReminderInput">{{color.name}}</option>
             <option value hidden>Choose a Color</option>
           </select>
+          <div
+            [ngClass]="{'show-error': reminderForm.get('color').getError('required') && reminderForm.get('color').touched}"
+            class="invalid-feedback">
+            Please select a color.
+          </div>
         </div>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="submit" [disabled]="reminderForm.invalid" class="btn btn-primary w-25">Save</button>
+      <button type="button" *ngIf="showEditButton" class="btn btn-danger w-25" (click)="editReminder()">Edit</button>
+      <button type="submit" *ngIf="!showEditButton" [disabled]="reminderForm.invalid" class="btn btn-primary w-25">
+        Save
+      </button>
+      <button type="button" *ngIf="showEditButton" class="btn btn-outline-primary w-25" (click)="modal.dismiss()">
+        Close
+      </button>
     </div>
   </form>
 </ng-template>
