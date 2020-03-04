@@ -18,6 +18,15 @@ This calendar you can allow to create a reminder in any time, details:
 
 IMPORTANT: Is required internet connection to connecting to the Open Weather API
 
+## How run the project
+
+1) Need download and install the lasted version of NodeJS LTS: https://nodejs.org
+2) Clone the repositorie on a local folder
+3) Enter to the project directorie and open a Command Console (Windows: Shift + Right-Click) or Shell
+4) On the console run the command `npm install`
+5) When is finish run the command `ng serve --open`
+6) Finally the project are automatical open on your default browser
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
